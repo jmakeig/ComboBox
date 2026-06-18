@@ -21,6 +21,8 @@
 		history = [{ snapshot: actor.getPersistedSnapshot(), timestamp: new Date() }, ...history];
 	});
 
+	actor.on('selected', evt => console.log('selected', evt));
+
 	function handle_keydown_select(evt) {
 		switch (evt.key) {
 			case 'ArrowDown':
@@ -38,11 +40,15 @@
 				actor.send({ type: 'select', selection: Math.max(0, state.context.selection - 1) });
 				evt.preventDefault();
 				break;
+			case 'Enter':
+				actor.send({ type: 'commit' });
+				actor.send({ type: 'deactivate' });
+				break;
 			case 'Escape':
 				actor.send({ type: 'deactivate' });
 				break;
 			default:
-			//console.log(evt.key);
+				// console.log(evt.key);
 		}
 	}
 
@@ -100,7 +106,7 @@
 		oninput={(evt) => actor.send({ type: 'oninput', value: evt.target.value })}
 		onkeydown={handle_keydown_select}
 	/> <code>selection: {state.context.selection ?? 'null'} </code>
-	{#if state.matches('active')}
+	{#if state.matches('active') && state.context.matches.length > 0}
 		<ol id="proposals" role="listbox" aria-label="Items">
 			{#each state.context.matches as match, i}
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -111,10 +117,8 @@
 					onclick={create_handle_click_select(i)}
 					class="interactive"
 				>
-					{match}
+					{match.label}
 				</li>
-			{:else}
-				…
 			{/each}
 		</ol>
 	{/if}
@@ -127,7 +131,7 @@
 	disabled={!state.can({type: "select"})}>Up</button>
 <br/> -->
 
-<details style="margin-top: 10em; padding: 1em; border: solid 1px #ccc;">
+<details open="open" style="margin-top: 10em; padding: 1em; border: solid 1px #ccc;">
 	<summary>History</summary>
 	<button onclick={(evt) => (history = [])}>Clear</button>
 	<nav>
@@ -144,11 +148,13 @@
 				id={'history_' + (i + 1).toString()}
 				style="padding: 0.25em; border: solid 0.5px #ccc;"
 			>
-				<summary
-					>{elapsed > 0 ? '+' : elapsed < 0 ? '-' : ''}{Math.abs(elapsed).toLocaleString()}ms {JSON.stringify(
-						event?.snapshot.value
-					)} ({event.timestamp.toISOString()})</summary
-				>
+				<summary>
+					<div style="display: inline-flex; width: calc(100% - 20px);">
+						<div style="flex-grow: 1;">{JSON.stringify(event?.snapshot.value)}</div>
+						<div style="width: fit-content; flex-shrink: 0;">{elapsed > 0 ? '+' : elapsed < 0 ? '-' : ''}{Math.abs(elapsed).toLocaleString()}ms</div>
+						<!-- <div>({event.timestamp.toISOString()})</div> -->
+					</div>
+				</summary>
 				<div>
 					<pre>{JSON.stringify(event?.snapshot, null, 2)}</pre>
 				</div>
