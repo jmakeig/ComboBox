@@ -8,37 +8,47 @@
     ✅ Use aria-selected instead of focus
 -->
 
-<script>
-	import { create_actor } from './machine.js';
+<script lang="ts">
+	import type { Snippet } from 'svelte';
+	import type { SnapshotFrom } from 'xstate';
+	import type { Proposal } from './types.js';
+	import { create_actor, machine } from './machine.js';
 
-	let { name, search, debug = false, item } = $props();
+	interface Props {
+		name: string;
+		search: (query: string) => Promise<Proposal[]>;
+		debug?: boolean;
+		item?: Snippet<[Proposal]>;
+	}
+
+	let { name, search, debug = false, item }: Props = $props();
 
 	// svelte-ignore state_referenced_locally
 	const actor = create_actor(search).start();
-	let state = $state(actor.getSnapshot());
-	let history = $state([]);
+	let snap = $state(actor.getSnapshot());
+	let history = $state([] as Array<{ snapshot: SnapshotFrom<typeof machine>; timestamp: Date }>);
 
 	actor.subscribe((snapshot) => {
-		state = snapshot;
-		history = [{ snapshot: actor.getPersistedSnapshot(), timestamp: new Date() }, ...history];
+		snap = snapshot;
+		history = [{ snapshot, timestamp: new Date() }, ...history];
 	});
 	actor.on('selected', (evt) => console.log('selected', evt));
 
-	function handle_keydown_select(evt) {
+	function handle_keydown_select(evt: KeyboardEvent): void {
 		switch (evt.key) {
 			case 'ArrowDown':
 				console.log('arrow down, yo!');
 				actor.send({
 					type: 'select',
 					selection: Math.min(
-						Math.max(0, state.context.matches.length - 1),
-						(state.context.selection ?? -1) + 1
+						Math.max(0, snap.context.matches.length - 1),
+						(snap.context.selection ?? -1) + 1
 					)
 				});
-				evt.preventDefault(); // Prevent scrolling (but what if the list needs to scroll?)
+				evt.preventDefault();
 				break;
 			case 'ArrowUp':
-				actor.send({ type: 'select', selection: Math.max(0, state.context.selection - 1) });
+				actor.send({ type: 'select', selection: Math.max(0, (snap.context.selection ?? 0) - 1) });
 				evt.preventDefault();
 				break;
 			case 'Enter':
@@ -53,20 +63,20 @@
 		}
 	}
 
-	function create_handle_click_select(index) {
-		return function handle_click_select(evt) {
+	function create_handle_click_select(index: number): () => void {
+		return function handle_click_select() {
 			actor.send({ type: 'select', selection: index });
 			actor.send({ type: 'commit' });
 			actor.send({ type: 'deactivate' });
-			// evt.preventDefault();
-			// evt.stopPropagation();
 		};
 	}
 
-	// Actions
-	function click_outside(node, callback) {
-		function handle_click(evt) {
-			if (!node.contains(evt.target)) {
+	function click_outside(
+		node: HTMLElement,
+		callback: (evt: MouseEvent) => void
+	): { destroy(): void } {
+		function handle_click(evt: MouseEvent) {
+			if (!node.contains(evt.target as Node | null)) {
 				callback(evt);
 			}
 		}
@@ -77,9 +87,10 @@
 			}
 		};
 	}
-	function blur_on_idle(node) {
+
+	function blur_on_idle(node: HTMLElement): void {
 		$effect(() => {
-			if (state.matches('idle')) node.blur();
+			if (snap.matches('idle')) node.blur();
 		});
 	}
 </script>
@@ -88,9 +99,6 @@
 	use:click_outside={(evt) => actor.send({ type: 'deactivate' })}
 	style="display:inline-block; width: fit-content; position: relative;"
 >
-	<!-- <button
-		onclick={evt => actor.send({type:"oninput", value: _type_ahead?.value})}
-		disabled={!state.can({type: "oninput"})}>Input</button> -->
 	<input
 		type="text"
 		id={name}
@@ -98,34 +106,35 @@
 		aria-label="Color"
 		aria-autocomplete="list"
 		aria-haspopup="listbox"
-		aria-activedescendant={null !== state.context.selection
-			? 'proposal_' + String(state.context.selection)
+		aria-activedescendant={null !== snap.context.selection
+			? 'proposal_' + String(snap.context.selection)
 			: undefined}
-		aria-expanded={state.matches({ active: 'proposing' })}
+		aria-expanded={snap.matches({ active: 'proposing' })}
 		aria-controls="proposals"
 		spellcheck="false"
 		autocorrect="off"
 		autocapitalize="off"
 		autocomplete="off"
-		value={state.context.type_ahead}
+		value={snap.context.type_ahead}
 		onfocus={(evt) => actor.send({ type: 'activate' })}
-		oninput={(evt) => actor.send({ type: 'oninput', value: evt.target.value })}
+		oninput={(evt) =>
+			actor.send({ type: 'oninput', value: (evt.target as HTMLInputElement).value })}
 		onkeydown={handle_keydown_select}
 		use:blur_on_idle
 	/>
-	<input type="text" {name} value={state.context.value?.value}/>
+	<input type="text" {name} value={snap.context.value?.value} />
 	<ol
 		id="proposals"
 		role="listbox"
 		aria-label="Items"
-		hidden={!state.matches({ active: 'proposing' })}
+		hidden={!snap.matches({ active: 'proposing' })}
 	>
-		{#each state.context.matches as match, i}
+		{#each snap.context.matches as match, i}
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<li
 				role="option"
 				id={'proposal_' + String(i)}
-				aria-selected={i === state.context.selection}
+				aria-selected={i === snap.context.selection}
 				onclick={create_handle_click_select(i)}
 				class="interactive"
 			>
@@ -134,9 +143,9 @@
 		{/each}
 	</ol>
 	<div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
-		{#if state.matches({ active: 'searching' })}
+		{#if snap.matches({ active: 'searching' })}
 			Loading…
-		{:else if state.matches({ active: 'proposing' }) && 0 === state.context.matches.length}
+		{:else if snap.matches({ active: 'proposing' }) && 0 === snap.context.matches.length}
 			No results
 		{/if}
 	</div>
@@ -146,8 +155,8 @@
 	<div
 		style="position: absolute; z-index: 10; top: 0; right: 0; width: 33%; height: 40em; overflow: auto; background: #ddd; padding: 0.5em;"
 	>
-		<h1 style="font-family: monospace; margin: 0.5em 0;">{JSON.stringify(state?.value)}</h1>
-		<details open="open" style="margin-top: 10em; padding: 1em; border: solid 1px #ccc;">
+		<h1 style="font-family: monospace; margin: 0.5em 0;">{JSON.stringify(snap?.value)}</h1>
+		<details open style="margin-top: 10em; padding: 1em; border: solid 1px #ccc;">
 			<summary>History</summary>
 			<button onclick={(evt) => (history = [])}>Clear</button>
 			<nav>
@@ -160,7 +169,8 @@
 			<div style="font-family: monospace; font-size: 1.1em; margin: 0.5em 0;">
 				{#each history as event, i}
 					{@const elapsed =
-						event.timestamp - history[Math.min(history.length - 1, i + 1)].timestamp}
+						event.timestamp.getTime() -
+						history[Math.min(history.length - 1, i + 1)].timestamp.getTime()}
 					<details
 						id={'history_' + (i + 1).toString()}
 						style="padding: 0.25em; border: solid 0.5px #ccc;"

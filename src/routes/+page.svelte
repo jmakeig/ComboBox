@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { get_colors } from '$lib/data.js';
 	import ComboBox from '$lib/ComboBox.svelte';
 </script>

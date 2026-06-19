@@ -1,37 +1,51 @@
-import { setup, createMachine, assign, emit, createActor, fromPromise } from 'xstate';
+import { setup, assign, emit, createActor, fromPromise } from 'xstate';
+import type { Actor, PromiseActorLogic } from 'xstate';
+import type { Proposal } from './types.js';
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+type Context = {
+	type_ahead: string;
+	matches: Proposal[];
+	selection: number | null;
+	value: Proposal | null;
+};
+
+type MachineEvent =
+	| { type: 'activate' }
+	| { type: 'deactivate' }
+	| { type: 'oninput'; value: string }
+	| { type: 'select'; selection: number }
+	| { type: 'commit' };
+
+type EmittedEvent = { type: 'selected'; value: string };
 
 export const machine = setup({
+	types: {} as {
+		context: Context;
+		events: MachineEvent;
+		emitted: EmittedEvent;
+		actors: { src: 'fetch_autocomplete'; logic: PromiseActorLogic<Proposal[], { search: string }> };
+	},
 	actions: {
 		update_type_ahead: assign({
-			type_ahead: ({ event }) => event.value
+			type_ahead: ({ event }) => (event as Extract<MachineEvent, { type: 'oninput' }>).value
 		}),
 		update_selection: assign({
-			selection: ({ event }) => event.selection
+			selection: ({ event }) => (event as Extract<MachineEvent, { type: 'select' }>).selection
 		}),
 		clear_proposal: assign({
-			matches: [],
-			selection: null
+			matches: (): Proposal[] => [],
+			selection: (): null => null
 		}),
 		do_commit: assign({
-			value: ({ context }) => context.matches[context.selection]
+			value: ({ context }) => context.matches[context.selection!]
 		})
 	},
 	actors: {
-		fetch_autocomplete: fromPromise(async ({ input: { search }, signal }) => {
-			throw new Error('sholdn’t be reachable');
-			/*
-				const response = await fetch(`https://httpbin.org/delay/3`, { signal });
-      if (!response.ok) {
-        throw new Error('Network response failed'); //?
-      }
-      return response.json();
-				*/
-			// await delay(100);
-			// return ['0: ' + search, '1: ' + search, '2: ' + search, '3: ' + search];
-			// return get_colors(search);
-		})
+		fetch_autocomplete: fromPromise(
+			async ({ input: { search: _ } }: { input: { search: string } }): Promise<Proposal[]> => {
+				throw new Error("shouldn't be reachable");
+			}
+		)
 	},
 	guards: {},
 	delays: {}
@@ -97,8 +111,8 @@ export const machine = setup({
 									target: '#combo_box.active.proposing',
 									actions: [
 										assign({
-											matches: ({ event }) => event.output, // 'output' is the fixed name of the invoker response
-											selection: null // Clear the selection when the results change
+											matches: ({ event }) => event.output,
+											selection: null
 										})
 									]
 								},
@@ -120,16 +134,13 @@ export const machine = setup({
 						commit: [
 							{
 								target: 'committed',
-								actions: [
-									{ type: 'do_commit' }
-									// raise({type: "deactivate"}) //?
-								]
+								actions: [{ type: 'do_commit' }]
 							}
 						]
 					}
 				},
 				committed: {
-					entry: [emit(({ context }) => ({ type: 'selected', value: context.value.value }))]
+					entry: [emit(({ context }) => ({ type: 'selected' as const, value: context.value!.value }))]
 				},
 				error: {
 					//TODO
@@ -145,34 +156,24 @@ export const machine = setup({
 				oninput: [
 					{
 						target: '#combo_box.active.waiting',
-						actions: [
-							{
-								type: 'update_type_ahead'
-							}
-						],
+						actions: [{ type: 'update_type_ahead' }],
 						reenter: true
 					}
 				]
 			}
 		}
 	}
-	/*
-		on: {
-			'*': {
-				actions: () => console.error('Invalid transition attempted')
-			}
-		}
-		*/
 });
 
-//export const actor = createActor(machine).start();
-export function create_actor(get_matches) {
+export function create_actor(get_matches: (query: string) => Promise<Proposal[]>): Actor<typeof machine> {
 	return createActor(
 		machine.provide({
 			actors: {
-				fetch_autocomplete: fromPromise(async ({ input: { search }, signal }) => {
-					return get_matches(search);
-				})
+				fetch_autocomplete: fromPromise(
+					async ({ input: { search } }: { input: { search: string } }): Promise<Proposal[]> => {
+						return get_matches(search);
+					}
+				)
 			}
 		})
 	);

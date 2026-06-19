@@ -1,4 +1,8 @@
-const COLORS = [
+import type { Proposal } from './types.ts';
+
+export interface Color extends Proposal {}
+
+const COLORS: readonly Color[] = [
 	{ value: 'amber', label: 'Amber' },
 	{ value: 'amethyst', label: 'Amethyst' },
 	{ value: 'apricot', label: 'Apricot' },
@@ -98,9 +102,12 @@ const COLORS = [
 	{ value: 'wine', label: 'Wine' },
 	{ value: 'yellow', label: 'Yellow' }
 ];
-export async function get_colors(type_ahead) {
-	if ('string' === typeof type_ahead && type_ahead.length > 2) {
-		return COLORS.filter((color) => color.label.toLowerCase().startsWith(type_ahead.toLowerCase()));
+
+export async function get_colors(type_ahead: string): Promise<Color[]> {
+	if (type_ahead.length > 2) {
+		return COLORS.filter((color) =>
+			color.label.toLowerCase().startsWith(type_ahead.toLowerCase())
+		);
 	}
 	return [];
 }
