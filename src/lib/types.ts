@@ -1,4 +1,5 @@
 export interface Proposal {
-	label: string;
+	name: string;
+	label?: string;
 	value: string;
 }

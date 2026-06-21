@@ -22,6 +22,7 @@
 	}
 
 	let { name, search, debug = false, item }: Props = $props();
+	const component_id = $props.id();
 
 	// svelte-ignore state_referenced_locally
 	const actor = create_actor(search).start();
@@ -153,10 +154,12 @@
 
 {#if debug}
 	<div
-		style="position: absolute; z-index: 10; top: 0; right: 0; width: 33%; height: 40em; overflow: auto; background: #ddd; padding: 0.5em;"
+		id={'history_' + component_id}
+		style="background: #ddd; padding: 0.5em; max-height: 12em; overflow: auto;"
 	>
+	<!-- position: absolute; z-index: 10; top: 0; right: 0; width: 33%; height: 40em; overflow: auto;  -->
 		<h1 style="font-family: monospace; margin: 0.5em 0;">{JSON.stringify(snap?.value)}</h1>
-		<details open style="margin-top: 10em; padding: 1em; border: solid 1px #ccc;">
+		<details open style="margin-top: 1em; padding: 1em; border: solid 1px #ccc;">
 			<summary>History</summary>
 			<button onclick={(evt) => (history = [])}>Clear</button>
 			<nav>
@@ -205,6 +208,8 @@
 		padding: 0;
 		list-style: none;
 		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+		background: #ddd;
 	}
 	#proposals > li {
 		padding: 0.5em;
