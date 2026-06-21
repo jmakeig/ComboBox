@@ -1,5 +1,5 @@
 <script lang="ts">
-	// import { get_colors } from '$lib/data.js';
+	import { get_colors } from '$lib/data.js';
 	import ComboBox from '$lib/ComboBox.svelte';
 
 	import { match_entities } from '$lib/pipeline';
@@ -18,13 +18,13 @@
 	</ComboBox>
 </div>
 
-<!-- <div class="control">
+<div class="control">
 	<ComboBox name="color" search={get_colors} debug>
 		{#snippet item(match)}
 			<strong>{match.label}</strong> — {match.value}
 		{/snippet}
 	</ComboBox>
-</div> -->
+</div>
 
 <style>
 	.control {

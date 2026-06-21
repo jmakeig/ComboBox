@@ -103,7 +103,7 @@ const COLORS: readonly Color[] = [
 	{ value: 'yellow', name: 'Yellow' }
 ];
 
-export async function get_colors(type_ahead: string): Promise<Proposal[]> {
+export async function get_colors(type_ahead: string): Promise<Color[]> {
 	if (type_ahead.length > 2) {
 		return COLORS.filter((color) => color.name.toLowerCase().startsWith(type_ahead.toLowerCase()));
 	}
