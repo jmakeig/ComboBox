@@ -18,6 +18,7 @@
 				"anthropic.claude-code"
 			],
 			"settings": {
+				"remote.autoForwardPorts": false,
 				"workbench.colorTheme": "Dracula",
 				"editor.formatOnSave": true,
 				"editor.defaultFormatter": "esbenp.prettier-vscode",
