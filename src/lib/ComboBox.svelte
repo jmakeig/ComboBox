@@ -1,11 +1,12 @@
 <!--
 	TODO:
+		* Think about relevance ranking: type-ahead matching weighted by recency, modified by the current user, etc.
 		✅ Implement render logic for list items and value.
 		* Add “Create XXX…” for new itemsl
 		✅ Refactor into proper Svelte component
 		✅ Refactor machine to inject actor and action implementations
 		✅ Cancel hanlder (esc, click outside)
-    ✅ Use aria-selected instead of focus
+		✅ Use aria-selected instead of focus
 -->
 
 <script lang="ts" generics="T extends Proposal">
