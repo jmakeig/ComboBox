@@ -936,6 +936,11 @@ async function search(list: Array<Entity>, input: string, limit = 10): Promise<A
 		.slice(0, limit);
 }
 
+function delay(duration = 200) {
+	return new Promise((resolve) => setTimeout(resolve, duration));
+}
+
 export async function match_entities(input: string) {
+	await delay(120);
 	return Promise.resolve(search(ENTITIES, input));
 }

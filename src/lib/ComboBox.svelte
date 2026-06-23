@@ -17,11 +17,12 @@
 	interface Props {
 		name: string;
 		search: (query: string) => Promise<T[]>;
-		debug?: boolean;
+		debug?: 'true' | 'false' | boolean;
 		item?: Snippet<[T]>;
 	}
 
-	let { name, search, debug = false, item }: Props = $props();
+	let { name, search, debug: _debug = false, item }: Props = $props();
+	let debug = $derived(true === _debug || 'true' === _debug);
 	const component_id = $props.id();
 
 	// svelte-ignore state_referenced_locally
@@ -100,11 +101,11 @@
 	use:click_outside={(evt) => {
 		if (!snap.matches('idle')) actor.send({ type: 'deactivate' });
 	}}
-	style="display:inline-block; width: fit-content; position: relative;"
+	style="display: inline-grid; align-items: center; position: relative;"
 >
 	<input
 		type="text"
-		id={name}
+		id={name /* This allows label/@for to work */}
 		role="combobox"
 		aria-label="Color"
 		aria-autocomplete="list"
@@ -124,8 +125,28 @@
 			actor.send({ type: 'oninput', value: (evt.target as HTMLInputElement).value })}
 		onkeydown={handle_keydown_select}
 		use:blur_on_idle
+		style="grid-area: 1/1; width: 20em;"
 	/>
-	<input type="text" {name} value={snap.context.value?.value} />
+	{#if snap.matches({ active: 'searching' })}
+		<div class="search_spinner" style="grid-area: 1/1; justify-self: end; padding-right: 0.25em;">
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="1em"
+				height="1em"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				class="spinning icon icon-tabler icons-tabler-outline icon-tabler-rotate-clockwise"
+			>
+				<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+				<path d="M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5" />
+			</svg>
+		</div>
+	{/if}
+	<input type={debug ? 'text' : 'hidden'} {name} value={snap.context.value?.value} />
 	<ol
 		id="proposals"
 		role="listbox"
@@ -210,7 +231,9 @@
 		padding: 0;
 		list-style: none;
 		/* box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); */
-		box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+		box-shadow:
+			rgba(0, 0, 0, 0.1) 0px 4px 6px -1px,
+			rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
 		background-color: #fff;
 	}
 	#proposals > li {
@@ -236,5 +259,14 @@
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 		border: 0;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(1turn);
+		}
+	}
+	.spinning {
+		animation: spin 0.75s linear infinite;
 	}
 </style>

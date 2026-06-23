@@ -5,10 +5,9 @@
 	import { match_entities } from '$lib/pipeline';
 </script>
 
-<label for="color">Color</label>
-
 <div class="control">
-	<ComboBox name="customer-workload" search={match_entities} debug>
+	<label for="customer-workload">Customer/Workload</label>
+	<ComboBox name="customer-workload" search={match_entities} debug="false">
 		{#snippet item(match)}
 			<div class="item">
 				{#if 'ref' in match}
@@ -94,8 +93,6 @@
 <style>
 	.control {
 		margin: 2em 0;
-	}
-	.item {
 	}
 	.item .ref {
 		margin-bottom: 0.25em;
