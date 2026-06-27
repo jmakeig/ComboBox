@@ -25,6 +25,10 @@ export const machine = setup({
 		events: MachineEvent;
 		emitted: EmittedEvent;
 		actors: { src: 'fetch_autocomplete'; logic: PromiseActorLogic<Proposal[], { search: string }> };
+		actions: { type: 'focus_input' };
+	},
+	actions: {
+		focus_input: () => {}
 	},
 	actors: {
 		fetch_autocomplete: fromPromise(
@@ -155,7 +159,7 @@ export const machine = setup({
 				],
 				clear: [
 					{
-						actions: [assign({ type_ahead: () => '' })]
+						actions: [assign({ type_ahead: () => '' }), 'focus_input']
 					}
 				]
 			}
@@ -164,7 +168,8 @@ export const machine = setup({
 });
 
 export function create_actor(
-	get_matches: (query: string) => Promise<Proposal[]>
+	get_matches: (query: string) => Promise<Proposal[]>,
+	focus_input: () => void
 ): Actor<typeof machine> {
 	return createActor(
 		machine.provide({
@@ -174,7 +179,8 @@ export function create_actor(
 						return get_matches(search);
 					}
 				)
-			}
+			},
+			actions: { focus_input }
 		})
 	);
 }

@@ -70,7 +70,7 @@
 	const component_id = $props.id();
 
 	// svelte-ignore state_referenced_locally
-	const actor = create_actor(search).start();
+	const actor = create_actor(search, () => document.getElementById(name)?.focus()).start();
 	let snap = $state(actor.getSnapshot());
 	let history = $state([] as Array<{ snapshot: SnapshotFrom<typeof machine>; timestamp: Date }>);
 
@@ -168,7 +168,6 @@
 					title="Edit"
 					onclick={(evt) => (evt.preventDefault(), actor.send({ type: 'activate' }))}
 					class="action"
-					style="padding: 0.25em 0.5em; background: none; border-style: none;"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -239,10 +238,10 @@
 				</div>
 			{:else}
 				<button
-					title="Edit"
+					title="Clear"
 					onclick={(evt) => (evt.preventDefault(), actor.send({ type: 'clear' }))}
+					disabled={!snap.context.type_ahead}
 					class="action"
-					style="padding: 0.25em 0.5em; background: none; border-style: none;"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -357,6 +356,11 @@
 	}
 	.action {
 		justify-self: end;
+	}
+	button.action {
+		padding: 0.25em 0.5em;
+		background: none;
+		border-style: none;
 	}
 	.search_spinner {
 		padding-right: 0.25em;
