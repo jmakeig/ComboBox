@@ -53,7 +53,7 @@
 		placeholder?: string;
 	}
 
-	let {
+	const {
 		name,
 		label,
 		search,
@@ -64,7 +64,7 @@
 		placeholder = name
 	}: Props = $props();
 
-	let debug = $derived(true === _debug || 'true' === _debug),
+	const debug = $derived(true === _debug || 'true' === _debug),
 		disabled = $derived(true === _disabled || 'true' === _disabled),
 		readonly = $derived(true === _readonly || 'true' === _readonly);
 	const component_id = $props.id();
@@ -353,12 +353,6 @@
 {/snippet}
 
 <style>
-	svg {
-		background: yellow !important;
-	}
-	button {
-		background: red !important;
-	}
 	.field {
 		display: grid;
 		align-items: center;
