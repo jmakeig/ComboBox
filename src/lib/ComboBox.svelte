@@ -140,6 +140,10 @@
 			if (snap.matches('idle')) node.blur();
 		});
 	}
+
+	function focus_on_mount(node: HTMLElement): void {
+		node.focus();
+	}
 </script>
 
 <div
@@ -197,6 +201,7 @@
 				oninput={(evt) =>
 					actor.send({ type: 'oninput', value: (evt.target as HTMLInputElement).value })}
 				onkeydown={handle_keydown_select}
+				use:focus_on_mount
 				use:blur_on_idle
 				{disabled}
 				{readonly}
