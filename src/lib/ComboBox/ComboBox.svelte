@@ -12,9 +12,10 @@
 <script lang="ts" generics="T extends Match">
 	import type { Snippet } from 'svelte';
 	import type { SnapshotFrom } from 'xstate';
-	import type { Match } from './types.js';
-	import { create_actor, machine } from './machine.js';
+	import type { Match } from './machine.js';
 	import type { Booleanish } from 'svelte/elements';
+
+	import { create_actor } from './machine.js';
 
 	/**
 	 * Items can be rendered in the match list or as a value in the idle state.
@@ -72,7 +73,7 @@
 	// svelte-ignore state_referenced_locally
 	const actor = create_actor(search, () => document.getElementById(name)?.focus(), 120).start();
 	let snap = $state(actor.getSnapshot());
-	let history = $state([] as Array<{ snapshot: SnapshotFrom<typeof machine>; timestamp: Date }>);
+	let history = $state([] as Array<{ snapshot: SnapshotFrom<typeof actor>; timestamp: Date }>);
 
 	actor.subscribe((snapshot) => {
 		snap = snapshot;
@@ -158,7 +159,7 @@
 		<div class="field">
 			<div class="inputish">
 				{#if snap.context.value}
-					{@render item(snap.context.value as T, 'compact')}
+					{@render item(snap.context.value, 'compact')}
 				{:else}
 					{placeholder}
 				{/if}
@@ -233,7 +234,7 @@
 						onclick={create_handle_click_select(i)}
 						class="interactive"
 					>
-						{@render item(match as T)}
+						{@render item(match)}
 					</li>
 				{/each}
 			</ol>
