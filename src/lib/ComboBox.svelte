@@ -70,7 +70,7 @@
 	const component_id = $props.id();
 
 	// svelte-ignore state_referenced_locally
-	const actor = create_actor(search, () => document.getElementById(name)?.focus()).start();
+	const actor = create_actor(search, () => document.getElementById(name)?.focus(), 120).start();
 	let snap = $state(actor.getSnapshot());
 	let history = $state([] as Array<{ snapshot: SnapshotFrom<typeof machine>; timestamp: Date }>);
 

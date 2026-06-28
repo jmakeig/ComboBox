@@ -27,6 +27,7 @@ export const machine = setup({
 		actors: { src: 'fetch_autocomplete'; logic: PromiseActorLogic<Match[], { search: string }> };
 		actions: { type: 'focus_input' };
 	},
+	// Override actions, actors, guards, and delays in machine.provide()
 	actions: {
 		focus_input: () => {}
 	},
@@ -38,7 +39,7 @@ export const machine = setup({
 		)
 	},
 	guards: {},
-	delays: {}
+	delays: { debounce_delay: 0 }
 }).createMachine({
 	id: 'combo_box',
 	context: {
@@ -91,7 +92,7 @@ export const machine = setup({
 					states: {
 						debouncing: {
 							after: {
-								500: {
+								debounce_delay: {
 									target: 'fetching'
 								}
 							}
@@ -181,7 +182,8 @@ export const machine = setup({
 
 export function create_actor(
 	get_matches: (query: string) => Promise<Match[]>,
-	focus_input: () => void
+	focus_input: () => void,
+	debounce = 200
 ): Actor<typeof machine> {
 	return createActor(
 		machine.provide({
@@ -192,7 +194,8 @@ export function create_actor(
 					}
 				)
 			},
-			actions: { focus_input }
+			actions: { focus_input },
+			delays: { debounce_delay: debounce }
 		})
 	);
 }
