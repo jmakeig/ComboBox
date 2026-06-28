@@ -156,13 +156,13 @@
 >
 	{#if snap.matches('idle')}
 		<div class="field">
-			<span>
+			<div class="inputish">
 				{#if snap.context.value}
 					{@render item(snap.context.value as T, 'compact')}
 				{:else}
 					{placeholder}
 				{/if}
-			</span>
+			</div>
 			{#if !disabled && !readonly}
 				<button
 					type="button"
@@ -204,9 +204,9 @@
 				autocomplete="off"
 			/>
 			{#if snap.matches({ active: 'searching' })}
-				<div class="search_spinner action">
+				<span class="action search_spinner">
 					{@render icon_spinner()}
-				</div>
+				</span>
 			{:else}
 				<button
 					type="button"
@@ -365,15 +365,15 @@
 	.action {
 		justify-self: end;
 	}
-	button.action {
+	.action {
 		display: flex;
 		align-items: center;
-		padding: 0.25em 0.5em;
-		background: none;
+		padding: 0 0.5em;
+		margin-right: 0.5em;
 		border-style: none;
 	}
-	.search_spinner {
-		padding-right: 0.25em;
+	button.action {
+		background: none;
 	}
 	#matches {
 		position: absolute;
