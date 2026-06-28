@@ -165,8 +165,9 @@
 			</span>
 			{#if !disabled && !readonly}
 				<button
+					type="button"
 					title="Edit"
-					onclick={(evt) => (evt.preventDefault(), actor.send({ type: 'activate' }))}
+					onclick={(evt) => actor.send({ type: 'activate' })}
 					class="action"
 				>
 					{@render icon_edit()}
@@ -208,8 +209,9 @@
 				</div>
 			{:else}
 				<button
+					type="button"
 					title="Clear"
-					onclick={(evt) => (evt.preventDefault(), actor.send({ type: 'clear' }))}
+					onclick={(evt) => actor.send({ type: 'clear' })}
 					disabled={!snap.context.type_ahead}
 					class="action"
 				>
