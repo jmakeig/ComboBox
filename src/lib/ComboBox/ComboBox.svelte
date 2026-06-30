@@ -190,7 +190,7 @@
 					? 'match_' + String(snap.context.selection)
 					: undefined}
 				aria-expanded={snap.matches({ active: 'proposing' })}
-				aria-controls="matches"
+				aria-controls={name + 'matches-' + component_id}
 				value={snap.context.type_ahead}
 				onfocus={(evt) => actor.send({ type: 'activate' })}
 				oninput={(evt) =>
@@ -222,10 +222,11 @@
 				</button>
 			{/if}
 			<ol
-				id="matches"
+				id={name + 'matches-' + component_id}
 				role="listbox"
 				aria-label="Items"
-				hidden={!snap.matches({ active: 'proposing' })}
+				class="listbox"
+				hidden={!snap.matches({ active: 'proposing' }) && !snap.matches({ active: 'searching' })}
 			>
 				{#each snap.context.matches as match, i}
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -378,7 +379,7 @@
 	button.action {
 		background: none;
 	}
-	#matches {
+	.listbox {
 		position: absolute;
 		z-index: 1;
 		top: 100%;
@@ -393,7 +394,7 @@
 			rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
 		background-color: #fff;
 	}
-	#matches > li {
+	.listbox > li {
 		padding: 0.5em;
 		border-bottom: solid 0.5px hsl(from currentColor h s 75%);
 		border-top: solid 0.5px hsl(from currentColor h s 95%);

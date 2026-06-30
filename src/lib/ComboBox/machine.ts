@@ -95,7 +95,7 @@ function create_machine<T extends Match>() {
 					},
 					searching: {
 						initial: 'debouncing',
-						entry: [assign({ matches: (): T[] => [], selection: (): null => null })],
+						entry: [assign({ selection: (): null => null })],
 						states: {
 							debouncing: {
 								after: {
