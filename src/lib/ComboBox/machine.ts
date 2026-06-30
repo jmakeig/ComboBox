@@ -120,7 +120,8 @@ function create_machine<T extends Match>() {
 										]
 									},
 									onError: {
-										//target: 'error'
+										target: '#combo_box.active.error',
+										actions: [({ event }) => console.error(event.error)]
 									}
 								}
 							}
@@ -152,9 +153,7 @@ function create_machine<T extends Match>() {
 							emit(({ context }) => ({ type: 'selected' as const, value: context.value!.value }))
 						]
 					},
-					error: {
-						//TODO
-					}
+					error: {}
 				},
 				on: {
 					deactivate: [

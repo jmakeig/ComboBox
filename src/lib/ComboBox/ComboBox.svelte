@@ -210,6 +210,10 @@
 				<span class="action search_spinner">
 					{@render icon_spinner()}
 				</span>
+			{:else if snap.matches({ active: 'error' })}
+				<span class="action error">
+					{@render icon_error()}
+				</span>
 			{:else}
 				<button
 					type="button"
@@ -353,6 +357,24 @@
 	>
 {/snippet}
 
+{#snippet icon_error(width = '1em', height = '1em')}
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		{width}
+		{height}
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		class="icon icon-tabler icons-tabler-outline icon-tabler-exclamation-circle"
+		><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
+			d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"
+		/><path d="M12 9v4" /><path d="M12 16v.01" /></svg
+	>
+{/snippet}
+
 <!-- Defaul rendering for matches -->
 {#snippet fallback_item(match: Match, mode?: string)}
 	{match.name} ({match.value})
@@ -426,5 +448,8 @@
 	}
 	.spinning {
 		animation: spin 0.75s linear infinite;
+	}
+	.error {
+		color: var(--color-error);
 	}
 </style>

@@ -104,9 +104,13 @@ const COLORS: readonly Color[] = [
 	{ value: 'yellow', name: 'Yellow' }
 ];
 
+/**
+ *
+ * @param type_ahead
+ * @returns
+ * @throws An error roughly 20% of the time to simulate fetch error handling
+ */
 export async function get_colors(type_ahead: string): Promise<Color[]> {
-	if (type_ahead.length > 2) {
-		return COLORS.filter((color) => color.name.toLowerCase().startsWith(type_ahead.toLowerCase()));
-	}
-	return [];
+	if (Math.random() < 0.2) throw new Error('Simulated fetch error');
+	return COLORS.filter((color) => color.name.toLowerCase().startsWith(type_ahead.toLowerCase()));
 }
