@@ -19,13 +19,12 @@
 		unmarshal: (form_data: FormData) => In = (form_data) => Object.fromEntries(form_data) as In
 	): SubmitFunction {
 		return ({ formData, cancel }) => {
-			const pending = unmarshal(formData);
-			const result = validate(pending);
+			const result = validate(unmarshal(formData));
 			if (is_invalid(result)) {
 				applyAction({
 					type: 'failure',
 					status: 422,
-					data: { validation: result.validation, input: result.input }
+					data: result //{ validation: result.validation, input: result.input }
 				});
 				cancel();
 			}
@@ -55,10 +54,10 @@
 </script>
 
 <form
-	novalidate
 	method="post"
 	action="?/create"
 	class:invalid={form?.validation?.has()}
+	novalidate
 	use:enhance={create_submit_enhance(validate_event, unmarshal_event)}
 >
 	<FormControl
@@ -74,7 +73,7 @@
 	</FormControl>
 	<FormControl
 		name="description"
-		value={'form?.exercise.description'}
+		value={'form?.customer_workload'}
 		label="Stuff"
 		validation={form?.validation}
 		help="A short summary"
@@ -113,6 +112,7 @@
 		{/snippet}
 	</FormControl>
 
+	/*
 	<div class="control">
 		<label for="customer-workload">Customer/Workload</label>
 		<div class="contents">
@@ -148,6 +148,7 @@
 			</ComboBox>
 		</div>
 	</div>
+	*/
 
 	<div class="control">
 		<label for="color1">Color</label>
